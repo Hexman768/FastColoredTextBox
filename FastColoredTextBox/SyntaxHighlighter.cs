@@ -32,8 +32,7 @@ namespace FastColoredTextBoxNS
                       CSharpClassNameRegex;
 
         protected Regex CSharpCommentRegex1,
-                      CSharpCommentRegex2,
-                      CSharpCommentRegex3;
+                      CSharpCommentRegex2;
 
         protected Regex CSharpKeywordRegex;
         protected Regex CSharpNumberRegex;
@@ -597,11 +596,8 @@ namespace FastColoredTextBoxNS
                     RegexOptions.ExplicitCapture | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace |
                     RegexCompiledOption
                     ); //thanks to rittergig for this regex
-
             CSharpCommentRegex1 = new Regex(@"//.*$", RegexOptions.Multiline | RegexCompiledOption);
-            CSharpCommentRegex2 = new Regex(@"(/\*.*?\*/)|(/\*.*)", RegexOptions.Singleline | RegexCompiledOption);
-            CSharpCommentRegex3 = new Regex(@"(/\*.*?\*/)|(.*\*/)",
-                                            RegexOptions.Singleline | RegexOptions.RightToLeft | RegexCompiledOption);
+            CSharpCommentRegex2 = new Regex(@"(\/\/.+?$|\/\*.+?\*\/)");
             CSharpNumberRegex = new Regex(@"\b\d+[\.]?\d*([eE]\-?\d+)?[lLdDfF]?\b|\b0x[a-fA-F\d]+\b",
                                           RegexCompiledOption);
             CSharpAttributeRegex = new Regex(@"^\s*(?<range>\[.+?\])\s*$", RegexOptions.Multiline | RegexCompiledOption);
@@ -712,7 +708,6 @@ namespace FastColoredTextBoxNS
             //comment highlighting
             range.SetStyle(CommentStyle, CSharpCommentRegex1);
             range.SetStyle(CommentStyle, CSharpCommentRegex2);
-            range.SetStyle(CommentStyle, CSharpCommentRegex3);
             //number highlighting
             range.SetStyle(NumberStyle, CSharpNumberRegex);
             //attribute highlighting
