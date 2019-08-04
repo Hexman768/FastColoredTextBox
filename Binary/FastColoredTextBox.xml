@@ -1253,6 +1253,12 @@
             If Null then BackColor is used.
             </summary>
         </member>
+        <member name="P:FastColoredTextBoxNS.FastColoredTextBox.AutoCompleteMenu">
+            <summary>
+            AutocompleteMenu object attached
+            to FastColoredTextBox.
+            </summary>
+        </member>
         <member name="P:FastColoredTextBoxNS.FastColoredTextBox.Multiline">
             <summary>
             Multiline
