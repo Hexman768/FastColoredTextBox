@@ -62,7 +62,6 @@ namespace FastColoredTextBoxNS
         private readonly List<VisualMarker> visibleMarkers = new List<VisualMarker>();
         public int TextHeight;
         public bool AllowInsertRemoveLines = true;
-        public AutocompleteMenu autocompleteMenu;
         private Brush backBrush;
         private BaseBookmarks bookmarks;
         private bool caretVisible;
@@ -1194,20 +1193,6 @@ namespace FastColoredTextBoxNS
             {
                 backBrush = value;
                 Invalidate();
-            }
-        }
-
-        /// <summary>
-        /// AutocompleteMenu object attached
-        /// to FastColoredTextBox.
-        /// </summary>
-        [Description("Autocomplete Menu.")]
-        public AutocompleteMenu AutoCompleteMenu
-        {
-            get { return autocompleteMenu; }
-            set
-            {
-                autocompleteMenu = value ?? autocompleteMenu;
             }
         }
 

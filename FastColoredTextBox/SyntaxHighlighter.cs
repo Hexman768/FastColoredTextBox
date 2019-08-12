@@ -22,33 +22,11 @@ namespace FastColoredTextBoxNS
         public readonly Style MaroonStyle = new TextStyle(Brushes.Maroon, null, FontStyle.Regular);
         public readonly Style RedStyle = new TextStyle(Brushes.Red, null, FontStyle.Regular);
         public readonly Style BlackStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
-        public readonly TextStyle YellowStyle = new TextStyle(Brushes.YellowGreen, null, FontStyle.Regular);
-        public readonly TextStyle GreenStyleItalic = new TextStyle(Brushes.Green, null, FontStyle.Italic);
-        private readonly TextStyle LightBlueStyle = new TextStyle(Brushes.RoyalBlue, null, FontStyle.Regular);
         //
         protected readonly Dictionary<string, SyntaxDescriptor> descByXMLfileNames =
             new Dictionary<string, SyntaxDescriptor>();
 
         protected readonly List<Style> resilientStyles = new List<Style>(5);
-
-        protected Regex BatchFileVariableRegex1,
-            BatchFileVariableRegex2;
-
-        protected Regex BatchFileAttrRegex;
-
-        protected Regex BatchFileClassNameRegex;
-
-        protected Regex BatchFileSymbolRegex1,
-            BatchFileSymbolRegex2;
-
-        protected Regex BatchFileKeywordRegex1,
-            BatchFileKeywordRegex2,
-            BatchFileKeywordRegex3;
-
-        protected Regex BatchFileOutKeyRegex;
-
-        protected Regex BatchFileCommentRegex1,
-            BatchFileCommentRegex2;
 
         protected Regex CSharpAttributeRegex,
                       CSharpClassNameRegex;
@@ -192,9 +170,6 @@ namespace FastColoredTextBoxNS
                     break;
                 case Language.Lua:
                     LuaSyntaxHighlight(range);
-                    break;
-                case Language.Batch:
-                    BatchFileSyntaxHighlight(range);
                     break;
                 default:
                     break;
@@ -633,29 +608,6 @@ namespace FastColoredTextBoxNS
                     RegexCompiledOption);
         }
 
-        protected void InitBatchFileRegex()
-        {
-            BatchFileVariableRegex1 = new Regex("(\".+?\"|\'.+?\')", RegexOptions.Singleline);
-
-            BatchFileVariableRegex2 = new Regex(@"%.+?%", RegexOptions.Multiline);
-
-            BatchFileAttrRegex = new Regex(@"^\s*(?<range>\[.+?\])\s*$", RegexOptions.Multiline);
-
-            BatchFileClassNameRegex = new Regex(@"^:[a-zA-Z]+", RegexOptions.Multiline);
-
-            BatchFileSymbolRegex1 = new Regex(@"^(@)(?=(?i)echo)", RegexOptions.Multiline);
-            BatchFileSymbolRegex2 = new Regex(@"(\*)", RegexOptions.Singleline);
-
-            BatchFileKeywordRegex1 = new Regex(@"(?<!(^(?i)(rem|::|echo).*))(?i)goto", RegexOptions.Multiline);
-            BatchFileKeywordRegex2 = new Regex(@"(?<!(^(?i)(rem|::|echo).*))(?i)do", RegexOptions.Multiline);
-            BatchFileKeywordRegex3 = new Regex(@"^([ ]{1,}|@)?\b(?i)(set|echo|for|pushd|popd|pause|exit|cd|if|else|goto|del|cls)(?![a-zA-Z]|[0-9])", RegexOptions.Multiline);
-
-            BatchFileOutKeyRegex = new Regex(@"^([ ]{1,}|@)?\b(?i)(git)(?![a-zA-Z]|[0-9])", RegexOptions.Multiline);
-
-            BatchFileCommentRegex1 = new Regex(@"(REM.*)");
-            BatchFileCommentRegex2 = new Regex(@"::.*");
-        }
-
         public void InitStyleSchema(Language lang)
         {
             switch (lang)
@@ -724,12 +676,6 @@ namespace FastColoredTextBoxNS
                     FunctionsStyle = MaroonStyle;
                     VariableStyle = MaroonStyle;
                     TypesStyle = BrownStyle;
-                    break;
-                case Language.Batch:
-                    StringStyle = RedStyle;
-                    CommentStyle = GreenStyleItalic;
-                    KeywordStyle = BlueStyle;
-                    VariableStyle = MagentaStyle;
                     break;
             }
         }
@@ -801,42 +747,6 @@ namespace FastColoredTextBoxNS
             range.SetFoldingMarkers("{", "}"); //allow to collapse brackets block
             range.SetFoldingMarkers(@"#region\b", @"#endregion\b"); //allow to collapse #region blocks
             range.SetFoldingMarkers(@"/\*", @"\*/"); //allow to collapse comment block
-        }
-
-        /// <summary>
-        /// Highlights Batch file code.
-        /// </summary>
-        /// <param name="range"></param>
-        public virtual void BatchFileSyntaxHighlight(Range range)
-        {
-            range.tb.LeftBracket = '(';
-            range.tb.RightBracket = ')';
-            // Clear all styles
-            range.ClearStyle(StyleIndex.All);
-
-            if (BatchFileAttrRegex == null)
-                InitBatchFileRegex();
-            //variable highlighting
-            range.SetStyle(YellowStyle, BatchFileVariableRegex1);
-            range.SetStyle(VariableStyle, BatchFileVariableRegex2);
-            //attribute highlighting
-            range.SetStyle(GrayStyle, BatchFileAttrRegex);
-            //class name highlighting
-            range.SetStyle(BoldStyle, BatchFileClassNameRegex);
-            //symbol highlighting
-            range.SetStyle(VariableStyle, BatchFileSymbolRegex1);
-            range.SetStyle(StringStyle, BatchFileSymbolRegex2);
-            //keyword highlighting
-            range.SetStyle(KeywordStyle, BatchFileKeywordRegex1);
-            range.SetStyle(KeywordStyle, BatchFileKeywordRegex2);
-            range.SetStyle(KeywordStyle, BatchFileKeywordRegex3);
-            //outside keyword highlighting
-            range.SetStyle(LightBlueStyle, BatchFileOutKeyRegex);
-            //comment highlighting
-            range.SetStyle(CommentStyle, BatchFileCommentRegex1);
-            range.SetStyle(CommentStyle, BatchFileCommentRegex2);
-            //clear folding markers
-            range.ClearFoldingMarkers();
         }
 
         protected void InitVBRegex()
@@ -1507,7 +1417,6 @@ namespace FastColoredTextBoxNS
         SQL,
         PHP,
         JS,
-        Lua,
-        Batch
+        Lua
     }
 }

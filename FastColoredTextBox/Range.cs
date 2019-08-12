@@ -1001,7 +1001,7 @@ namespace FastColoredTextBoxNS
             List<Place> charIndexToPlace;
             GetText(out text, out charIndexToPlace);
             //
-            foreach (Match m in @regex.Matches(text))
+            foreach (Match m in regex.Matches(text))
             {
                 Range r = new Range(this.tb);
                 //try get 'range' group, otherwise use group 0
