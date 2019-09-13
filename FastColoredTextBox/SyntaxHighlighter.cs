@@ -34,9 +34,10 @@ namespace FastColoredTextBoxNS
         protected Regex CSharpCommentRegex1,
                       CSharpCommentRegex2;
 
-        protected Regex CSharpKeywordRegex;
-        protected Regex CSharpNumberRegex;
-        protected Regex CSharpStringRegex;
+        protected Regex CSharpKeywordRegex,
+                      CSharpNumberRegex,
+                      CSharpStringRegex,
+                      CSharpPrepDirectiveRegex;
 
         protected Regex HTMLAttrRegex,
                       HTMLAttrValRegex,
@@ -97,7 +98,7 @@ namespace FastColoredTextBoxNS
 
         protected Regex SQLCommentRegex1,
                       SQLCommentRegex2,
-                      SQLCommentRegex3, 
+                      SQLCommentRegex3,
                       SQLCommentRegex4;
 
         protected Regex SQLFunctionsRegex;
@@ -126,7 +127,8 @@ namespace FastColoredTextBoxNS
             }
         }
 
-        public SyntaxHighlighter(FastColoredTextBox currentTb) {
+        public SyntaxHighlighter(FastColoredTextBox currentTb)
+        {
             this.currentTb = currentTb;
         }
 
@@ -562,7 +564,7 @@ namespace FastColoredTextBoxNS
         {
             //CSharpStringRegex = new Regex( @"""""|@""""|''|@"".*?""|(?<!@)(?<range>"".*?[^\\]"")|'.*?[^\\]'", RegexCompiledOption);
 
-            CSharpStringRegex =
+            /*CSharpStringRegex =
                 new Regex(
                     @"
                             # Character definitions:
@@ -595,17 +597,25 @@ namespace FastColoredTextBoxNS
                         ",
                     RegexOptions.ExplicitCapture | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace |
                     RegexCompiledOption
-                    ); //thanks to rittergig for this regex
-            CSharpCommentRegex1 = new Regex(@"//.*$", RegexOptions.Multiline | RegexCompiledOption);
-            CSharpCommentRegex2 = new Regex(@"(\/\/.+?$|\/\*.+?\*\/)");
-            CSharpNumberRegex = new Regex(@"\b\d+[\.]?\d*([eE]\-?\d+)?[lLdDfF]?\b|\b0x[a-fA-F\d]+\b",
-                                          RegexCompiledOption);
+                    );*/ //thanks to rittergig for this regex
+            // String Highlighting
+            CSharpStringRegex = new Regex(@"\""([^""]|\""\"")+\""");
+            // Comments Highlighting
+            CSharpCommentRegex1 = new Regex(@"/\*(.|[\r\n])*?\*/", RegexOptions.Multiline | RegexOptions.Compiled);
+            CSharpCommentRegex2 = new Regex(@"//.*?$", RegexOptions.Multiline | RegexOptions.Compiled);
+            // Number Highlighting
+            CSharpNumberRegex = new Regex(@"\b\d+[\.]?\d*([eE]\-?\d+)?[lLdDfF]?\b|\b0x[a-fA-F\d]+\b", RegexCompiledOption);
+            // Attribute Highlighting
             CSharpAttributeRegex = new Regex(@"^\s*(?<range>\[.+?\])\s*$", RegexOptions.Multiline | RegexCompiledOption);
+            // Class Name Highlighting
             CSharpClassNameRegex = new Regex(@"\b(class|struct|enum|interface)\s+(?<range>\w+?)\b", RegexCompiledOption);
+            // Keyword Highlighting
             CSharpKeywordRegex =
                 new Regex(
-                    @"\b(abstract|add|alias|as|ascending|async|await|base|bool|break|by|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|descending|do|double|dynamic|else|enum|equals|event|explicit|extern|false|finally|fixed|float|for|foreach|from|get|global|goto|group|if|implicit|in|int|interface|internal|into|is|join|let|lock|long|nameof|namespace|new|null|object|on|operator|orderby|out|override|params|partial|private|protected|public|readonly|ref|remove|return|sbyte|sealed|select|set|short|sizeof|stackalloc|static|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|using|value|var|virtual|void|volatile|when|where|while|yield)\b|#region\b|#endregion\b",
+                    @"\b(abstract|add|alias|as|ascending|async|await|base|bool|break|by|byte|case|catch|char|checked|class|const|continue|decimal|default|delegate|descending|do|double|dynamic|else|enum|equals|event|explicit|extern|false|finally|fixed|float|for|foreach|from|get|global|goto|group|if|implicit|in|int|interface|internal|into|is|join|let|lock|long|nameof|namespace|new|null|object|on|operator|orderby|out|override|params|partial|private|protected|public|readonly|ref|remove|return|sbyte|sealed|select|set|short|sizeof|stackalloc|static|static|string|struct|switch|this|throw|true|try|typeof|uint|ulong|unchecked|unsafe|ushort|using|using|value|var|virtual|void|volatile|when|where|while|yield)\b",
                     RegexCompiledOption);
+            // Preprocessor Directive Highlighting
+            CSharpPrepDirectiveRegex = new Regex(@"#region\b|#endregion\b", RegexCompiledOption);
         }
 
         public void InitStyleSchema(Language lang)
@@ -716,6 +726,8 @@ namespace FastColoredTextBoxNS
             range.SetStyle(ClassNameStyle, CSharpClassNameRegex);
             //keyword highlighting
             range.SetStyle(KeywordStyle, CSharpKeywordRegex);
+            //preprocessor directive highlighting
+            range.SetStyle(GrayStyle, CSharpPrepDirectiveRegex);
 
             //find document comments
             foreach (Range r in range.GetRanges(@"^\s*///.*$", RegexOptions.Multiline))
