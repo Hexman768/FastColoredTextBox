@@ -4997,7 +4997,9 @@ namespace FastColoredTextBoxNS
             int startLine = YtoLineIndex(VerticalScroll.Value);
             int iLine;
 
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            //e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+            e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
             //draw text
             for (iLine = startLine; iLine < lines.Count; iLine++)
