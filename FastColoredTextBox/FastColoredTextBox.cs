@@ -3692,6 +3692,9 @@ namespace FastColoredTextBoxNS
                         Paste();
                     break;
 
+                case FCTBAction.Save:
+                    break;
+
                 case FCTBAction.SelectAll:
                     Selection.SelectAll();
                     break;
