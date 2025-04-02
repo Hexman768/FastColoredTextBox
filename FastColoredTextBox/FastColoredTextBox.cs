@@ -3513,13 +3513,24 @@ namespace FastColoredTextBoxNS
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyUp(e);
+            ResetModifiers(e);
+        }
 
-            if (e.KeyCode == Keys.ShiftKey)
-                lastModifiers &= ~Keys.Shift;
-            if (e.KeyCode == Keys.Alt)
-                lastModifiers &= ~Keys.Alt;
-            if (e.KeyCode == Keys.ControlKey)
-                lastModifiers &= ~Keys.Control;
+        public void ResetModifiers(KeyEventArgs e)
+        {
+            if (e == null)
+            {
+                lastModifiers = Keys.None;
+            }
+            else
+            {
+                if (e.KeyCode == Keys.ShiftKey)
+                    lastModifiers &= ~Keys.Shift;
+                if (e.KeyCode == Keys.Alt)
+                    lastModifiers &= ~Keys.Alt;
+                if (e.KeyCode == Keys.ControlKey)
+                    lastModifiers &= ~Keys.Control;
+            }
         }
 
 
@@ -3550,6 +3561,7 @@ namespace FastColoredTextBoxNS
 
             DoCaretVisible();
             Invalidate();
+            ResetModifiers(null);
         }
 
         protected override bool ProcessDialogKey(Keys keyData)
