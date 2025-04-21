@@ -2028,6 +2028,13 @@ namespace FastColoredTextBoxNS
         [Description("Occurs when custom wordwrap is needed.")]
         public event EventHandler<WordWrapNeededEventArgs> WordWrapNeeded;
 
+        /// <summary>
+        /// Occurs when a file is saved
+        /// </summary>
+        [Browsable(true)]
+        [Description("Occurs when a file is saved.")]
+        public event EventHandler<FileSavedEventArgs> FileSaved;
+
 
         /// <summary>
         /// Returns list of styles of given place
@@ -2646,6 +2653,58 @@ namespace FastColoredTextBoxNS
 
             if (!string.IsNullOrEmpty(text))
                 InsertText(text);
+        }
+
+        /// <summary>
+        /// Save given text to file path.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public bool Save(string text)
+        {
+            if (Tag == null)
+            {
+                return SaveAs(text);
+            }
+
+            File.WriteAllText((string)Tag, text);
+
+            /* Raise file saved event for parent to handle */
+            FileSaved(this, new FileSavedEventArgs(true));
+            return true;
+        }
+
+        public bool SaveAs(string text)
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+
+            dialog.Filter = "Normal text file (*.txt)|*.txt|"
+            + "C# source file (*.cs)" + "|*.cs|"
+            + "Hyper Text Markup Language File (*.html)" + "|*.html|"
+            + "Javascript source file (*.js)" + "|*.js|"
+            + "JSON file (*.json)" + "|*.json|"
+            + "Lua source file (*.lua)" + "|*.lua|"
+            + "PHP file (*.php)" + "|*.php|"
+            + "Structured Query Language file (*.sql)" + "|*.sql|"
+            + "Visual Basic file (*.vb)" + "|*.vb|"
+            + "VBScript file (*.vbs)" + "|*.vbs|"
+            + "JSON file (*.json)" + "|*.json|"
+            + "Windows Batch file (*.bat)" + "|*.bat|"
+            + "Assembly Program file (*.asm)" + "|*.asm|"
+            + "All files (*.*)" + "|*.*";
+
+            if (dialog.ShowDialog() != DialogResult.OK)
+            {
+                FileSaved(this, new FileSavedEventArgs(false));
+                return false;
+            }
+            Tag = dialog.FileName;
+
+            File.WriteAllText((string)Tag, text);
+
+            /* Raise file saved event for parent to handle */
+            FileSaved(this, new FileSavedEventArgs(true));
+            return true;
         }
 
         /// <summary>
@@ -3693,6 +3752,7 @@ namespace FastColoredTextBoxNS
                     break;
 
                 case FCTBAction.Save:
+                    Save(Text);
                     break;
 
                 case FCTBAction.SelectAll:
