@@ -22,19 +22,23 @@ namespace FastColoredTextBoxNS
         public readonly Style MaroonStyle = new TextStyle(Brushes.Maroon, null, FontStyle.Regular);
         public readonly Style RedStyle = new TextStyle(Brushes.Red, null, FontStyle.Regular);
         public readonly Style BlackStyle = new TextStyle(Brushes.Black, null, FontStyle.Regular);
-        public readonly TextStyle YellowStyle = new TextStyle(Brushes.YellowGreen, null, FontStyle.Regular);
         public readonly TextStyle GreenStyleItalic = new TextStyle(Brushes.Green, null, FontStyle.Italic);
         private readonly TextStyle LightBlueStyle = new TextStyle(Brushes.RoyalBlue, null, FontStyle.Regular);
         public readonly Style ForestGreenStyle = new TextStyle(Brushes.ForestGreen, null, FontStyle.Italic);
         public readonly Style CrimsonStyle = new TextStyle(Brushes.Crimson, null, FontStyle.Regular);
         public readonly Style OrangeStyle = new TextStyle(Brushes.Orange, null, FontStyle.Regular);
         public readonly Style DodgerBlueStyle = new TextStyle(Brushes.DodgerBlue, null, FontStyle.Regular);
+        public readonly Style BlackItalicStyle = new TextStyle(Brushes.Black, null, FontStyle.Italic);
+        public readonly Style RedBkgdYellowStyle = new TextStyle(Brushes.Red, Brushes.Yellow, FontStyle.Regular);
+        public readonly Style RedBoldStyle = new TextStyle(Brushes.Red, null, FontStyle.Bold);
 
         //
         protected readonly Dictionary<string, SyntaxDescriptor> descByXMLfileNames =
             new Dictionary<string, SyntaxDescriptor>();
 
         protected readonly List<Style> resilientStyles = new List<Style>(5);
+
+        protected Regex BatchFileStringRegex1;
 
         protected Regex BatchFileVariableRegex1,
             BatchFileVariableRegex2;
@@ -44,7 +48,8 @@ namespace FastColoredTextBoxNS
         protected Regex BatchFileClassNameRegex;
 
         protected Regex BatchFileSymbolRegex1,
-            BatchFileSymbolRegex2;
+            BatchFileSymbolRegex2,
+            BatchFileSymbolRegex3;
 
         protected Regex BatchFileKeywordRegex1,
             BatchFileKeywordRegex2,
@@ -676,24 +681,29 @@ namespace FastColoredTextBoxNS
 
         protected void InitBatchFileRegex()
         {
-            BatchFileVariableRegex1 = new Regex("(\".+?\"|\'.+?\')", RegexOptions.Singleline);
+            BatchFileStringRegex1 = new Regex("(\".+?\"|\'.+?\')", RegexOptions.Singleline);
 
-            BatchFileVariableRegex2 = new Regex(@"%.+?%", RegexOptions.Multiline);
+            BatchFileVariableRegex1 = new Regex(@"(?<!(^(?i)(rem|::).*))(?i)(%[a-zA-Z0-9]+?%|!.+?!)", RegexOptions.Multiline);
+            BatchFileVariableRegex2 = new Regex(@"(%%)(?:(?i:~[fdpnxsatz]*(?:\\$PATH:)?)?[a-zA-Z])");
 
             BatchFileAttrRegex = new Regex(@"^\s*(?<range>\[.+?\])\s*$", RegexOptions.Multiline);
 
-            BatchFileClassNameRegex = new Regex(@"^:[a-zA-Z]+", RegexOptions.Multiline);
+            BatchFileClassNameRegex = new Regex(@"^:[a-zA-Z0-9]+", RegexOptions.Multiline);
 
             BatchFileSymbolRegex1 = new Regex(@"^(@)(?=(?i)echo)", RegexOptions.Multiline);
             BatchFileSymbolRegex2 = new Regex(@"(\*)", RegexOptions.Singleline);
+            BatchFileSymbolRegex3 = new Regex(@"(?<!(^(?i)(rem|::).*))(?i)(>|<|&)", RegexOptions.Multiline);
 
-            BatchFileKeywordRegex1 = new Regex(@"(?<!(^(?i)(rem|::|echo).*))(?i)goto", RegexOptions.Multiline);
-            BatchFileKeywordRegex2 = new Regex(@"(?<!(^(?i)(rem|::|echo).*))(?i)do", RegexOptions.Multiline);
-            BatchFileKeywordRegex3 = new Regex(@"^([ ]{1,}|@)?\b(?i)(set|echo|for|pushd|popd|pause|exit|cd|if|else|goto|del|cls)(?![a-zA-Z]|[0-9])", RegexOptions.Multiline);
+            // Command keywords
+            BatchFileKeywordRegex1 = new Regex(@"(?<!(^(?i)(rem|::|echo).*))(?i)(goto|do|cd|start)", RegexOptions.Multiline);
+            // Standard keywords
+            BatchFileKeywordRegex2 = new Regex(@"^([ ]{0,}|@)?\b(?i)(arp|assoc|at|attrib|aux|bcdedit|break|cacls|call|cd|chcp|chdir|chkdsk|chkntfs|choice|cipher|clip|cls|cmd|cmdextversion|color|com|com1|com2|com3|com4|comp|compact|con|convert|copy|ctty|date|defined|del|dir|diskcomp|diskpart|do|doskey|dpath|driverquery|echo|else|endlocal|equ|erase|errorlevel|exist|exit|expand|fc|find|findstr|for|forfiles|format|fsutil|ftype|geq|goto|gpresult|graftabl|gtr|help|icacls|if|in|ipconfig|label|leq|lpt|lpt1|lpt2|lpt3|lpt4|lss|makecab|md|mkdir|mklink|mode|more|move|neq|net|netsh|not|nul|openfiles|path|pause|ping|popd|print|prompt|pushd|rd|recover|reg|rem|ren|rename|replace|rmdir|robocopy|rundll32|sc|schtasks|set|setlocal|setx|shift|shutdown|sort|start|subst|systeminfo|taskkill|tasklist|time|timeout|title|tree|type|ver|verify|vol|wmic|xcopy)(?![a-zA-Z]|[0-9])", RegexOptions.Multiline);
+            // Special keywords
+            BatchFileKeywordRegex3 = new Regex(@"(?<!(^(?i)(rem|::).*))(?i)NUL", RegexOptions.Multiline);
 
             BatchFileOutKeyRegex = new Regex(@"^([ ]{1,}|@)?\b(?i)(git)(?![a-zA-Z]|[0-9])", RegexOptions.Multiline);
 
-            BatchFileCommentRegex1 = new Regex(@"(REM.*)");
+            BatchFileCommentRegex1 = new Regex(@"REM.*");
             BatchFileCommentRegex2 = new Regex(@"::.*");
         }
 
@@ -772,10 +782,13 @@ namespace FastColoredTextBoxNS
                     KeywordStyle = BlueStyle;
                     break;
                 case Language.Batch:
-                    StringStyle = RedStyle;
+                    StringStyle = BlackItalicStyle;
                     CommentStyle = GreenStyleItalic;
                     KeywordStyle = BlueStyle;
-                    VariableStyle = MagentaStyle;
+                    VariableStyle = OrangeStyle;
+                    BatchSymbolStyle1 = MagentaStyle;
+                    BatchSymbolStyle2 = RedStyle;
+                    BatchSymbolStyle3 = RedBoldStyle;
                     break;
                 case Language.Assembly:
                     AssemblyRegisterStyle = OrangeStyle;
@@ -871,16 +884,19 @@ namespace FastColoredTextBoxNS
 
             if (BatchFileAttrRegex == null)
                 InitBatchFileRegex();
+            //string highlighting
+            range.SetStyle(StringStyle, BatchFileStringRegex1);
             //variable highlighting
-            range.SetStyle(YellowStyle, BatchFileVariableRegex1);
+            range.SetStyle(VariableStyle, BatchFileVariableRegex1);
             range.SetStyle(VariableStyle, BatchFileVariableRegex2);
             //attribute highlighting
             range.SetStyle(GrayStyle, BatchFileAttrRegex);
             //class name highlighting
-            range.SetStyle(BoldStyle, BatchFileClassNameRegex);
+            range.SetStyle(RedBkgdYellowStyle, BatchFileClassNameRegex);
             //symbol highlighting
-            range.SetStyle(VariableStyle, BatchFileSymbolRegex1);
-            range.SetStyle(StringStyle, BatchFileSymbolRegex2);
+            range.SetStyle(BatchSymbolStyle1, BatchFileSymbolRegex1);
+            range.SetStyle(BatchSymbolStyle2, BatchFileSymbolRegex2);
+            range.SetStyle(BatchSymbolStyle3, BatchFileSymbolRegex3);
             //keyword highlighting
             range.SetStyle(KeywordStyle, BatchFileKeywordRegex1);
             range.SetStyle(KeywordStyle, BatchFileKeywordRegex2);
@@ -1664,6 +1680,21 @@ namespace FastColoredTextBoxNS
         /// Assembly Register style
         /// </summary>
         public Style AssemblyRegisterStyle { get; set; }
+
+        /// <summary>
+        /// Specific Batch file symbol style
+        /// </summary>
+        public Style BatchSymbolStyle1 { get; set; }
+
+        /// <summary>
+        /// Specific Batch file symbol style
+        /// </summary>
+        public Style BatchSymbolStyle2 { get; set; }
+
+        /// <summary>
+        /// Specific Batch file symbol style
+        /// </summary>
+        public Style BatchSymbolStyle3 { get; set; }
 
         #endregion
     }
