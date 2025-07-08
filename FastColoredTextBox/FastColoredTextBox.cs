@@ -2028,6 +2028,13 @@ namespace FastColoredTextBoxNS
         [Description("Occurs when custom wordwrap is needed.")]
         public event EventHandler<WordWrapNeededEventArgs> WordWrapNeeded;
 
+        /// <summary>
+        /// Occurs when a file is saved
+        /// </summary>
+        [Browsable(true)]
+        [Description("Occurs when a file is saved.")]
+        public event EventHandler<FileSavedEventArgs> FileSaved;
+
 
         /// <summary>
         /// Returns list of styles of given place
@@ -2646,6 +2653,58 @@ namespace FastColoredTextBoxNS
 
             if (!string.IsNullOrEmpty(text))
                 InsertText(text);
+        }
+
+        /// <summary>
+        /// Save given text to file path.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public bool Save(string text)
+        {
+            if (Tag == null)
+            {
+                return SaveAs(text);
+            }
+
+            File.WriteAllText((string)Tag, text);
+
+            /* Raise file saved event for parent to handle */
+            FileSaved(this, new FileSavedEventArgs(true));
+            return true;
+        }
+
+        public bool SaveAs(string text)
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+
+            dialog.Filter = "Normal text file (*.txt)|*.txt|"
+            + "C# source file (*.cs)" + "|*.cs|"
+            + "Hyper Text Markup Language File (*.html)" + "|*.html|"
+            + "Javascript source file (*.js)" + "|*.js|"
+            + "JSON file (*.json)" + "|*.json|"
+            + "Lua source file (*.lua)" + "|*.lua|"
+            + "PHP file (*.php)" + "|*.php|"
+            + "Structured Query Language file (*.sql)" + "|*.sql|"
+            + "Visual Basic file (*.vb)" + "|*.vb|"
+            + "VBScript file (*.vbs)" + "|*.vbs|"
+            + "JSON file (*.json)" + "|*.json|"
+            + "Windows Batch file (*.bat)" + "|*.bat|"
+            + "Assembly Program file (*.asm)" + "|*.asm|"
+            + "All files (*.*)" + "|*.*";
+
+            if (dialog.ShowDialog() != DialogResult.OK)
+            {
+                FileSaved(this, new FileSavedEventArgs(false));
+                return false;
+            }
+            Tag = dialog.FileName;
+
+            File.WriteAllText((string)Tag, text);
+
+            /* Raise file saved event for parent to handle */
+            FileSaved(this, new FileSavedEventArgs(true));
+            return true;
         }
 
         /// <summary>
@@ -3513,13 +3572,24 @@ namespace FastColoredTextBoxNS
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyUp(e);
+            ResetModifiers(e);
+        }
 
-            if (e.KeyCode == Keys.ShiftKey)
-                lastModifiers &= ~Keys.Shift;
-            if (e.KeyCode == Keys.Alt)
-                lastModifiers &= ~Keys.Alt;
-            if (e.KeyCode == Keys.ControlKey)
-                lastModifiers &= ~Keys.Control;
+        public void ResetModifiers(KeyEventArgs e)
+        {
+            if (e == null)
+            {
+                lastModifiers = Keys.None;
+            }
+            else
+            {
+                if (e.KeyCode == Keys.ShiftKey)
+                    lastModifiers &= ~Keys.Shift;
+                if (e.KeyCode == Keys.Alt)
+                    lastModifiers &= ~Keys.Alt;
+                if (e.KeyCode == Keys.ControlKey)
+                    lastModifiers &= ~Keys.Control;
+            }
         }
 
 
@@ -3550,6 +3620,7 @@ namespace FastColoredTextBoxNS
 
             DoCaretVisible();
             Invalidate();
+            ResetModifiers(null);
         }
 
         protected override bool ProcessDialogKey(Keys keyData)
@@ -3678,6 +3749,10 @@ namespace FastColoredTextBoxNS
                 case FCTBAction.Paste:
                     if (!Selection.ReadOnly)
                         Paste();
+                    break;
+
+                case FCTBAction.Save:
+                    Save(Text);
                     break;
 
                 case FCTBAction.SelectAll:
