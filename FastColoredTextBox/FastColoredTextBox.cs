@@ -125,6 +125,7 @@ namespace FastColoredTextBoxNS
         private int reservedCountOfLineNumberChars = 1;
         private int zoom = 100;
         private Size localAutoScrollMinSize;
+        private Encoding encoding;
  
         /// <summary>
         /// Constructor
@@ -1701,6 +1702,22 @@ namespace FastColoredTextBoxNS
             }
         }
         private int defaultMarkerSize = 8;
+
+        /// <summary>
+        /// Encoding of the current file
+        /// </summary>
+        [Browsable(false)]
+        public Encoding Encoding
+        {
+            get { return encoding; }
+            set
+            {
+                if (value != null)
+                {
+                    encoding = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Removes all hints
@@ -7605,9 +7622,9 @@ window.status = ""#print"";
         {
             try
             {
-                var enc = EncodingDetector.DetectTextFileEncoding(fileName);
-                if (enc != null)
-                    OpenFile(fileName, enc);
+                encoding = EncodingDetector.DetectTextFileEncoding(fileName);
+                if (encoding != null)
+                    OpenFile(fileName, encoding);
                 else
                     OpenFile(fileName, Encoding.Default);
             }
