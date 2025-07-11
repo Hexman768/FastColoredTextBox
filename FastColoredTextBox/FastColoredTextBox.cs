@@ -146,7 +146,8 @@ namespace FastColoredTextBoxNS
             InitTextSource(CreateTextSource());
             if (lines.Count == 0)
                 lines.InsertLine(0, lines.CreateLine());
-            selection = new Range(this) {Start = new Place(0, 0)};
+            selection = new Range(this);
+            selection.SetStartAndEnd(new Place(0, 0));
             //default settings
             Cursor = Cursors.IBeam;
             BackColor = Color.White;
@@ -1478,7 +1479,7 @@ namespace FastColoredTextBoxNS
         public int SelectionStart
         {
             get { return Math.Min(PlaceToPosition(Selection.Start), PlaceToPosition(Selection.End)); }
-            set { Selection.Start = PositionToPlace(value); }
+            set { Selection.SetStartAndEnd(PositionToPlace(value)); }
         }
 
         /// <summary>
@@ -2286,7 +2287,7 @@ namespace FastColoredTextBoxNS
         {
             if (iLine >= LinesCount) return;
             lastNavigatedDateTime = lines[iLine].LastVisit;
-            Selection.Start = new Place(0, iLine);
+            Selection.SetStartAndEnd(new Place(0, iLine));
             DoSelectionVisible();
         }
 
@@ -2631,8 +2632,8 @@ namespace FastColoredTextBoxNS
                 if (Selection.Start.iLine >= 0 && Selection.Start.iLine < LinesCount)
                 {
                     int iLine = Selection.Start.iLine;
-                    RemoveLines(new List<int> {iLine});
-                    Selection.Start = new Place(0, Math.Max(0, Math.Min(iLine, LinesCount - 1)));
+                    RemoveLines(new List<int> { iLine });
+                    Selection.SetStartAndEnd(new Place(0, Math.Max(0, Math.Min(iLine, LinesCount - 1))));
                 }
             }
         }
@@ -2738,9 +2739,9 @@ namespace FastColoredTextBoxNS
         public void GoEnd()
         {
             if (lines.Count > 0)
-                Selection.Start = new Place(lines[lines.Count - 1].Count, lines.Count - 1);
+                Selection.SetStartAndEnd(new Place(lines[lines.Count - 1].Count, lines.Count - 1));
             else
-                Selection.Start = new Place(0, 0);
+                Selection.SetStartAndEnd(new Place(0, 0));
 
             DoCaretVisible();
         }
@@ -2750,7 +2751,7 @@ namespace FastColoredTextBoxNS
         /// </summary>
         public void GoHome()
         {
-            Selection.Start = new Place(0, 0);
+            Selection.SetStartAndEnd(new Place(0, 0));
 
             DoCaretVisible();
             //VerticalScroll.Value = 0;
@@ -2931,9 +2932,9 @@ namespace FastColoredTextBoxNS
             try
             {
                 if (lines.Count > 0)
-                    Selection.Start = new Place(lines[lines.Count - 1].Count, lines.Count - 1);
+                    Selection.SetStartAndEnd(new Place(lines[lines.Count - 1].Count, lines.Count - 1));
                 else
-                    Selection.Start = new Place(0, 0);
+                    Selection.SetStartAndEnd(new Place(0, 0));
 
                 //remember last caret position
                 Place last = Selection.Start;
@@ -3114,7 +3115,7 @@ namespace FastColoredTextBoxNS
             Selection.BeginUpdate();
             try
             {
-                Selection.Start = new Place(lineLength, Selection.Start.iLine);
+                Selection.SetStartAndEnd(new Place(lineLength, Selection.Start.iLine));
                 lines.Manager.ExecuteCommand(new InsertTextCommand(TextSource, new string(' ', count)));
             }
             finally
@@ -4254,7 +4255,7 @@ namespace FastColoredTextBoxNS
                 for (int i = Selection.Start.iLine; i <= Selection.End.iLine; i++)
                     temp.Add(i);
                 RemoveLines(temp);
-                Selection.Start = new Place(GetLineLength(iLine), iLine);
+                Selection.SetStartAndEnd(new Place(GetLineLength(iLine), iLine));
                 SelectedText = "\n" + text;
                 Selection.Start = new Place(prevSelection.Start.iChar, prevSelection.Start.iLine + 1);
                 Selection.End = new Place(prevSelection.End.iChar, prevSelection.End.iLine + 1);
@@ -4282,7 +4283,7 @@ namespace FastColoredTextBoxNS
                 for (int i = Selection.Start.iLine; i <= Selection.End.iLine; i++)
                     temp.Add(i);
                 RemoveLines(temp);
-                Selection.Start = new Place(0, iLine - 1);
+                Selection.SetStartAndEnd(new Place(0, iLine - 1));
                 SelectedText = text + "\n";
                 Selection.Start = new Place(prevSelection.Start.iChar, prevSelection.Start.iLine - 1);
                 Selection.End = new Place(prevSelection.End.iChar, prevSelection.End.iLine - 1);
@@ -4661,13 +4662,13 @@ namespace FastColoredTextBoxNS
                         continue;
 
                     if (oldSel.Start.iLine == i && oldSel.Start.iChar > cap.Index)
-                        oldSel.Start = new Place(oldSel.Start.iChar + addSpaces, i);
+                        oldSel.SetStartAndEnd(new Place(oldSel.Start.iChar + addSpaces, i));
 
                     if (addSpaces > 0)
                         texts[i] = texts[i].Insert(cap.Index, new string(' ', addSpaces));
                     else
                         texts[i] = texts[i].Remove(cap.Index + addSpaces, -addSpaces);
-                    
+
                     changed[i] = true;
                     was = true;
                 }
@@ -4816,7 +4817,7 @@ namespace FastColoredTextBoxNS
             //insert start spaces
             if (needToInsert == 0)
                 return;
-            Selection.Start = new Place(0, iLine);
+            Selection.SetStartAndEnd(new Place(0, iLine));
             if (needToInsert > 0)
                 InsertText(new String(' ', needToInsert));
             else
@@ -4826,7 +4827,7 @@ namespace FastColoredTextBoxNS
                 ClearSelected();
             }
 
-            Selection.Start = new Place(Math.Min(lines[iLine].Count, Math.Max(0, oldStart.iChar + needToInsert)), iLine);
+            Selection.SetStartAndEnd(new Place(Math.Min(lines[iLine].Count, Math.Max(0, oldStart.iChar + needToInsert)), iLine));
         }
 
         /// <summary>
@@ -5676,15 +5677,15 @@ namespace FastColoredTextBoxNS
 
             if (Selection.ColumnSelectionMode)
             {
-                Selection.Start = PointToPlaceSimple(e.Location);
+                Selection.SetStartAndEnd(PointToPlaceSimple(e.Location));
                 Selection.ColumnSelectionMode = true;
             }
             else
             {
                 if (VirtualSpace)
-                    Selection.Start = PointToPlaceSimple(e.Location);
+                    Selection.SetStartAndEnd(PointToPlaceSimple(e.Location));
                 else
-                    Selection.Start = PointToPlace(e.Location);
+                    Selection.SetStartAndEnd(PointToPlace(e.Location));
             }
 
             if ((lastModifiers & Keys.Shift) != 0)
@@ -5915,11 +5916,11 @@ namespace FastColoredTextBoxNS
                     Selection.BeginUpdate();
                     if (Selection.ColumnSelectionMode)
                     {
-                        Selection.Start = place;
+                        Selection.SetStartAndEnd(place);
                         Selection.ColumnSelectionMode = true;
                     }
                     else
-                        Selection.Start = place;
+                        Selection.SetStartAndEnd(place);
                     Selection.End = oldEnd;
                     Selection.EndUpdate();
                     DoCaretVisible();
@@ -6753,7 +6754,7 @@ namespace FastColoredTextBoxNS
             int newLine = FindNextVisibleLine(to);
             if (newLine == to)
                 newLine = FindPrevVisibleLine(from);
-            Selection.Start = new Place(0, newLine);
+            Selection.SetStartAndEnd(new Place(0, newLine));
             //
             needRecalc = true;
             Invalidate();
@@ -6805,7 +6806,7 @@ namespace FastColoredTextBoxNS
             {
                 if (!Selection.ReadOnly)
                 {
-                    Selection.Start = new Place(this[Selection.Start.iLine].StartSpacesCount, Selection.Start.iLine);
+                    Selection.SetStartAndEnd(new Place(this[Selection.Start.iLine].StartSpacesCount, Selection.Start.iLine));
                     //insert tab as spaces
                     int spaces = TabLength - (Selection.Start.iChar % TabLength);
                     //replace mode? select forward chars
@@ -6846,7 +6847,7 @@ namespace FastColoredTextBoxNS
             for (int i = from; i <= to; i++)
             {
                 if (lines[i].Count == 0) continue;
-                Selection.Start = new Place(startChar, i);
+                Selection.SetStartAndEnd(new Place(startChar, i));
                 lines.Manager.ExecuteCommand(new InsertTextCommand(TextSource, new String(' ', TabLength)));
             }
 
@@ -7057,7 +7058,7 @@ namespace FastColoredTextBoxNS
             int spaces = GetMinStartSpacesCount(from, to);
             for (int i = from; i <= to; i++)
             {
-                Selection.Start = new Place(spaces, i);
+                Selection.SetStartAndEnd(new Place(spaces, i));
                 lines.Manager.ExecuteCommand(new InsertTextCommand(TextSource, prefix));
             }
             Selection.Start = new Place(0, from);
@@ -7233,7 +7234,7 @@ namespace FastColoredTextBoxNS
                 if (range.CharAfterStart == rightBracket) counter--;
                 if (counter == 1)
                 {
-                    range.Start = new Place(range.Start.iChar + (!includeBrackets ? 1 : 0), range.Start.iLine);
+                    range.SetStartAndEnd(new Place(range.Start.iChar + (!includeBrackets ? 1 : 0), range.Start.iLine));
                     leftBracketPosition = range;
                     break;
                 }
@@ -7611,7 +7612,7 @@ window.status = ""#print"";
                 IsChanged = false;
                 throw;
             }
-            Selection.Start = Place.Empty;
+            Selection.SetStartAndEnd(Place.Empty);
             DoSelectionVisible();
         }
 
@@ -7781,7 +7782,7 @@ window.status = ""#print"";
         void ISupportInitialize.EndInit()
         {
             OnTextChanged();
-            Selection.Start = Place.Empty;
+            Selection.SetStartAndEnd(Place.Empty);
             DoCaretVisible();
             IsChanged = false;
             ClearUndo();
@@ -7847,7 +7848,7 @@ window.status = ""#print"";
             {
                 Selection.BeginUpdate();
                 // Insert text
-                Selection.Start = place;
+                Selection.SetStartAndEnd(place);
                 InsertText(text);
                 // Select inserted text
                 Selection = new Range(this, place, Selection.Start);
@@ -7954,7 +7955,7 @@ window.status = ""#print"";
             {
                 Selection.BeginUpdate();
                 // Insert text
-                Selection.Start = place;
+                Selection.SetStartAndEnd(place);
                 InsertText(text);
                 // Select inserted text
                 Selection = new Range(this, place, Selection.Start);
@@ -8114,7 +8115,7 @@ window.status = ""#print"";
             if (e.Data.GetDataPresent(DataFormats.Text))
             {
                 Point p = PointToClient(new Point(e.X, e.Y));
-                Selection.Start = PointToPlace(p);
+                Selection.SetStartAndEnd(PointToPlace(p));
                 if (p.Y < 6 && VerticalScroll.Visible && VerticalScroll.Value > 0)
                     VerticalScroll.Value = Math.Max(0, VerticalScroll.Value - charHeight);
 
