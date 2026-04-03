@@ -1,6 +1,7 @@
-FastColoredTextBox
+FastColoredTextBox - Notepad# Fork Mirror
 ==================
-
+This fork was created so that Notepad# can run its own custom version of the FCTB control with custom behavior. 
+___
 Fast Colored TextBox is text editor component for .NET.
 Allows you to create custom text editor with syntax highlighting.
 It works well with small, medium, large and very-very large files.
